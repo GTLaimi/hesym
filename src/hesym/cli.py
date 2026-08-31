@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
+"""命令行入口 - MIDI 解析与可视化 CLI"""
+
 import argparse
 import json
 import sys
 import os
 
-# 将当前目录加入 Python 路径，确保能找到 core 和 models
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# 使用相对导入（包内导入）
+from .core.midi_parser import parse_midi
 
-from core.midi_parser import parse_midi
 
 def main():
-    parser = argparse.ArgumentParser(description="MIDIassistant 命令行解析工具 (Termux 专用)")
+    parser = argparse.ArgumentParser(
+        description="hesym: MIDI file parser and visualizer - extract notes, stats, and more"
+    )
     parser.add_argument("file", help="要解析的 MIDI 文件路径")
     parser.add_argument("--json", action="store_true", help="以 JSON 格式输出原始数据")
     parser.add_argument("--stats", action="store_true", help="显示统计信息（总音符数、时长等）")
@@ -38,7 +41,7 @@ def main():
     # ---- 输出逻辑 ----
     if args.json:
         data = {
-            "format": "midi_assistant_core",
+            "format": "hesym_core",
             "ticks_per_beat": ticks_per_beat,
             "bpm": bpm,
             "time_signature": time_sig,
@@ -48,8 +51,8 @@ def main():
                 {
                     "pitch": n.pitch,
                     "name": n.pitch_name,
-                    "start": n.start_tick,
-                    "duration": n.duration,
+                    "start_tick": n.start_tick,
+                    "duration_ticks": n.duration,
                     "velocity": n.velocity
                 } for n in notes
             ]
@@ -69,7 +72,7 @@ def main():
         if args.fix_vel > 0:
             print(f"   🔧 已将所有力度 0 修正为 {args.fix_vel}")
     else:
-        # 默认表格显示（手动精调列宽）
+        # 默认表格显示
         print(f"\n🎵 解析成功！共读取 {len(notes)} 个音符 (显示前 {min(args.limit, len(notes))} 个):\n")
         print(f"{'Note':<6} {'Pitch':<5} {'Start':<10} {'Dur':<8} {'Vel'}")
         print("-" * 40)
